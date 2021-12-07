@@ -2,22 +2,28 @@ fn main() {
     let input = include_str!("../input").trim();
     let positions = parse_input(input);
 
-    let mut min_fuel = i64::MAX;
+    let optimal_position = positions
+        .iter()
+        .sum::<i64>() as f64 / positions.len() as f64;
+        
+    if optimal_position.fract() == 0.0 {
+        let fuel = calculate_fuel_cost(&positions, optimal_position as i64);
 
-    let min_pos = *positions.iter().min().unwrap();
-    let max_pos = *positions.iter().max().unwrap();
-
-    for i in min_pos..max_pos + 1 {
-        let curr_fuel: i64 = positions
-            .iter()
-            .map(|v| i64::abs(v - i))
-            .map(|v| if v < 2 { v } else { v * (v+1) / 2 })
-            .sum();
-
-        min_fuel = min_fuel.min(curr_fuel);
+        println!("{}", fuel);
+    } else {
+        let fuel_floor = calculate_fuel_cost(&positions, optimal_position.floor() as i64);
+        let fuel_ceiling = calculate_fuel_cost(&positions, optimal_position.ceil() as i64);
+        
+        println!("{}", fuel_ceiling.min(fuel_floor));
     }
-    
-    println!("{}", min_fuel);
+}
+
+fn calculate_fuel_cost(positions: &[i64], target: i64) -> i64 {
+    positions
+        .iter()
+        .map(|v| i64::abs(v - target))
+        .map(|v| if v < 2 { v } else { v * (v+1) / 2 })
+        .sum()
 }
 
 fn parse_input(input: &str) -> Vec<i64> {
